@@ -34,7 +34,6 @@ INSTALLED_APPS = [
 
     'genes',
     'organisms',
-
     'a1.apps.A1Config',
     'django.contrib.admin',
     'django.contrib.auth',
