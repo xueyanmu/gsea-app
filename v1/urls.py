@@ -6,7 +6,12 @@ from django.conf.urls.static import static
 import a1
 
 urlpatterns = [
-    path('a1/', include('a1.urls')),
-    path('admin/', admin.site.urls),
-    url(r'^', a1.views.list, name='list')
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+                  path('admin/', admin.site.urls),
+
+                    #take care of the base stuff
+                  path('', include('a1.urls', namespace='base')),
+                  url(r'^', a1.views.upload_file, name='base'),
+                    #this is where the upload_file is
+                  url(r'^saved/$', a1.views.upload_file, name='saved'),
+
+              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

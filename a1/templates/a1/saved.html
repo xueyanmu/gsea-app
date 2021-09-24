@@ -1,0 +1,40 @@
+<html>
+   <body>
+
+{% load static %}
+
+    {% block content %}
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="myfile">
+        <button type="submit">Upload</button>
+      </form>
+
+      {% if saved %}
+        <!--
+         todo: use this to open the file!
+        <a href="{{ uploaded_file_path }}">
+        -->
+
+        <p>File uploaded: {{ uploaded_file_path }}</a></p>
+        <!-- if the file was uploaded, we check the input validity-->
+        <p> Successfully uploaded! </p>
+        {% endif %}
+
+      {% if not saved %}
+         <strong>Your document is not saved yet.</strong>
+      {% endif %}
+
+        {% if missing_genes %}
+            <strong>Your file is missing the genes with the following entrezIDs:
+                {{missing_genes}}
+            </strong>
+
+        {% endif %}
+
+      <p><a href="{% url 'base' %}">Return to home</a></p>
+    {% endblock %}
+
+
+   </body>
+</html>

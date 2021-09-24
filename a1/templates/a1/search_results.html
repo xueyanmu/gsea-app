@@ -1,0 +1,9 @@
+<h1>Search Results</h1>
+
+<ul>
+  {% for gene in object_list %}
+    <li>
+      {{ gene.entrezid }}, {{ city.description }}
+    </li>
+  {% endfor %}
+</ul>
