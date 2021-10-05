@@ -19,20 +19,32 @@ class Geneset(models.Model):
     # organism = models.ForeignKey(Organism, on_delete=models.CASCADE)
     organism = models.ManyToManyField(Organism, through='OrganismGS')
     function_database = models.CharField(max_length=200)
-    genes = models.ManyToManyField(Gene, through='Parentset')
+    genes = models.ManyToManyField(Gene, through='Geneset_membership')
 #todo: use Organism in the manytomany with geneset?
     class Meta:
         ordering = ['id']
     def __str__(self):
         return str(self.id)
+    def add_genes(self):
+        geneset = self  #name of the geneset, ie. GOterm
+        geneset_name = self.id
+        genes = Gene.objects.filter(geneset_name=geneset_name)
+        self.size = len(genes)
+        self.grouping = "GO term"
 
-class Parentset(models.Model):
+        for g in genes:
+            gm = Geneset_membership(geneset=geneset, gene=g)
+            gm.save()
+
+
+class Geneset_membership(models.Model):
     gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
     geneset = models.ForeignKey(Geneset, on_delete=models.CASCADE)
+
 
 class OrganismGS(models.Model):
     organism = models.ForeignKey(Organism, on_delete=models.CASCADE)
     geneset = models.ForeignKey(Geneset, on_delete=models.CASCADE)
 
 
-#gs = Geneset(id="lung gene set", size=10, grouping="GO term", organism="homo sapiens", function_database="crossRef")
+#gs = Geneset(id="lung gene set", size=10, grouping="GO term", organism="9606", function_database="crossRef")

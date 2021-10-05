@@ -1,3 +1,6 @@
+
+<!-- TODO: DO I NEED TO EXTEND BASE?-->
+
 <html>
    <body>
 
@@ -9,6 +12,40 @@
         <input type="file" name="myfile">
         <button type="submit">Upload</button>
       </form>
+<!-- add table_id for datatable functionality-->
+<table id="table_id" class="display" border='2' align="center" style="'width:100%"
+<caption> Data table for GSEA tool </caption>
+<thead>
+    <tr>
+        <th> geneset_type </th>
+        <th> id </th>
+        <th> name </th>
+        <th> pval </th>
+        <th> adj.pval </th>
+        <th> geneset_size </th>
+        <th> input_size </th>
+        <th> overlap </th>
+    </tr>
+</thead>
+
+<tbody>
+    <tr >
+
+
+        {% if valid_genes %}
+            {% for g in valid_genes %}
+
+                <TD class="c3" align="center">{{ g.entrezid }}</TD>
+                <TD class="c3" align="center">{{ g.standard_name }}</TD>
+
+        {% endfor %}
+        {% endif %}
+
+
+
+</tbody>
+    </table>
+
 
       {% if saved %}
         <!--
@@ -26,14 +63,35 @@
       {% endif %}
 
         {% if missing_genes %}
-            <strong>Your file is missing the genes with the following entrezIDs:
+            <strong>Your file contains the following unsupported entrezIDs:
                 {{missing_genes}}
             </strong>
-
         {% endif %}
 
       <p><a href="{% url 'base' %}">Return to home</a></p>
+
     {% endblock %}
+   {% block js%}
+   <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"> </script>
+     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/kt-2.6.4/r-2.2.9/rg-1.1.3/rr-1.2.8/sb-1.2.2/sp-1.4.0/sl-1.3.3/datatables.min.css"/>
+
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/af-2.3.7/b-2.0.1/b-colvis-2.0.1/b-html5-2.0.1/b-print-2.0.1/cr-1.5.4/date-1.1.1/fc-4.0.0/kt-2.6.4/r-2.2.9/rg-1.1.3/rr-1.2.8/sb-1.2.2/sp-1.4.0/sl-1.3.3/datatables.min.js"></script>
+
+   <script>
+       $(document).ready( function () {
+       $('#table_id').DataTable({
+
+       dom: 'B<"clear">lfrtip',
+       buttons: {
+                name: 'primary',
+                buttons: {'copy', 'csv', 'excel', 'pdf'}
+                }}
+              );
+       } );
+   </script>
+   {% endblock %}
 
 
    </body>

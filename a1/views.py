@@ -35,6 +35,7 @@ def detail(request, gene_id):
 def upload_file(request):
     saved = False
     missing_genes = []
+    valid_genes = []
     # Handle file upload
 
     if request.method == 'POST':
@@ -44,16 +45,19 @@ def upload_file(request):
         uploaded_file_path = fs.path(filename)
         print('absolute file path', uploaded_file_path)
         saved = True
-        missing_genes.append(check_input(uploaded_file_path))
+        missing_genes.append(check_input(uploaded_file_path)[0])
+        valid_genes.append(check_input(uploaded_file_path)[1])
 
     return render(request, 'a1/saved.html', locals())
 
 
 def check_input(filename):
     """
-    Reads space OR tab delimited genes, and marks unavailable ones
+    Reads space OR tab delimited genes, and marks unavailable ones,
+    and adds the available ones.
     """
     missing = set()
+    valid = set()
     with open(filename, 'r') as f:
         f.readline()  # discard header
         print("print(f)")
@@ -63,13 +67,19 @@ def check_input(filename):
             tokens = line.split('\t')
             #tokens = [x.strip() for x in tokens]
             entrez = tokens[1]
-            print(entrez)
+            #print(entrez)
             symbol = tokens[2]
             if entrez != '':
                 in_database = Gene.objects.filter(Q(entrezid__icontains=entrez))
+                gene=in_database[0]
+                #TODO: DOES THIS WORK lol
+                matching_genesets = Geneset.objects.filter((Q(genes__icontains=gene)))
+                print(matching_genesets)
+                valid.add(in_database)
+                #print(str(in_database))
                 if not in_database:
                     missing.add(entrez)
-    return missing
+    return missing, valid
 
 
 
