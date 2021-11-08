@@ -17,9 +17,12 @@ class Geneset(models.Model):
     size = models.IntegerField(default=0)
     grouping = models.CharField(max_length=64)
     # organism = models.ForeignKey(Organism, on_delete=models.CASCADE)
-    organism = models.ManyToManyField(Organism, through='OrganismGS')
-    function_database = models.CharField(max_length=200)
-    genes = models.ManyToManyField(Gene, through='Geneset_membership')
+    organism = models.ManyToManyField(Organism,
+                                      through='OrganismGS')
+    setname = models.CharField(max_length=200)
+    genes = models.ManyToManyField(Gene,
+                                   through='Geneset_membership')
+
 #todo: use Organism in the manytomany with geneset?
     class Meta:
         ordering = ['id']

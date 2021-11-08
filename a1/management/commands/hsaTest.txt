@@ -1,0 +1,21 @@
+GO:0033572	transferrin transport (7)	1213	7036	392	387849	22853	1785	7037
+GO:0034756	regulation of iron ion transport (4)	23479	3077	567	7018
+GO:0010039	response to iron ion (12)	6622	2395	7036	48	7018	596	3091	3077	567	7020	4891	57817
+GO:0071281	cellular response to iron ion (5)	7036	7018	3077	567	7020
+GO:0009620	response to fungus (13)	1669	3273	2597	84659	5919	60343	245928	64581	122665	6283	26525	245909	4057
+GO:0050832	defense response to fungus (12)	1669	3273	2597	84659	5919	60343	245928	122665	6283	26525	245909	4057
+GO:0019732	antifungal humoral response (5)	1669	5919	60343	26525	4057
+GO:0032780	negative regulation of ATPase activity (12)	7248	7137	51025	3434	79609	5018	4331	23411	93974	4057	5350	7139
+GO:0034145	positive regulation of toll-like receptor 4 signaling pathway (8)	10062	353376	2150	26191	57590	114609	3929	4057
+GO:0034143	regulation of toll-like receptor 4 signaling pathway (13)	10062	11027	353376	2150	153090	26191	57590	114609	3929	92747	9572	9258	4057
+GO:0051673	membrane disruption in other organism (4)	84659	1667	4057	117285
+GO:1900190	regulation of single-species biofilm formation (2)	4057	51297
+GO:1900229	negative regulation of single-species biofilm formation in or on host organism (2)	4057	51297
+GO:1900228	regulation of single-species biofilm formation in or on host organism (2)	4057	51297
+GO:1900191	negative regulation of single-species biofilm formation (2)	4057	51297
+GO:1902732	positive regulation of chondrocyte proliferation (3)	51548	4057	6662
+GO:0006880	intracellular sequestering of iron ion (1)	2495
+GO:0051238	sequestering of metal ion (4)	2495	169026	6278	3934
+GO:0097577	sequestering of iron ion (2)	2495	3934
+GO:0036016	cellular response to interleukin-3 (1)	4502
+GO:0036015	response to interleukin-3 (1)	4502

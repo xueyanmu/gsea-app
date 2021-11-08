@@ -9,7 +9,7 @@ class GMT:
     Forked from FunctionLab/flib.
     '''
 
-    def __init__(mself, filename=None):
+    def __init__(self, filename=None):
         self._genesets = defaultdict(set)
         self._setnames = {}
         self._genes = set()

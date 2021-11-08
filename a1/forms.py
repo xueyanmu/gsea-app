@@ -14,13 +14,3 @@ class DocumentForm(forms.ModelForm):
         model = Document
         fields = ('description', 'docfile', )
 
-
-class GeneCheckForm(forms.ModelForm):
-    entrez_id = forms.CharField(label = 'gene entrez ID', max_length=100)
-    def clean(self):
-        cleaned_data = super(GeneCheckForm, self).clean()
-        entrez_id = cleaned_data.get("entrez_id")
-        try:
-            p = Gene.objects.get(id=entrez_id)
-        except Gene.DoesNotExist:
-            raise forms.ValidationError("Gene entrez ID is not in database.")

@@ -36,6 +36,7 @@ def upload_file(request):
     saved = False
     missing_genes = []
     valid_genes = []
+    geneset = None
     # Handle file upload
 
     if request.method == 'POST':
@@ -43,11 +44,16 @@ def upload_file(request):
         fs = FileSystemStorage()
         filename = fs.save(img_file.name, img_file)
         uploaded_file_path = fs.path(filename)
-        print('absolute file path', uploaded_file_path)
+        #print('absolute file path', uploaded_file_path)
         saved = True
         missing_genes.append(check_input(uploaded_file_path)[0])
-        valid_genes.append(check_input(uploaded_file_path)[1])
 
+        valid_genes.append(check_input(uploaded_file_path)[1])
+        valid_genes=valid_genes[0]
+        # for g in valid_genes:
+        # #print(g)
+        # #print(valid_genes)
+        geneset = check_input(uploaded_file_path)[2]
     return render(request, 'a1/saved.html', locals())
 
 
@@ -57,72 +63,33 @@ def check_input(filename):
     and adds the available ones.
     """
     missing = set()
-    valid = set()
+    valid = []
+    matching_genesets = None
     with open(filename, 'r') as f:
         f.readline()  # discard header
-        print("print(f)")
         for line in f:
-
             #Tab delimited- todo: how to add space AND tab functionality?
             tokens = line.split('\t')
             #tokens = [x.strip() for x in tokens]
             entrez = tokens[1]
-            #print(entrez)
             symbol = tokens[2]
             if entrez != '':
-                in_database = Gene.objects.filter(Q(entrezid__icontains=entrez))
-                gene=in_database[0]
-                #TODO: DOES THIS WORK lol
-                matching_genesets = Geneset.objects.filter((Q(genes__icontains=gene)))
-                print(matching_genesets)
-                valid.add(in_database)
-                #print(str(in_database))
+                all_genes = Gene.objects.all()
+                for gene in all_genes:
+
+                    if Gene.objects.filter(entrezid__icontains=entrez):
+                        if gene not in valid:
+                            valid.append(gene)
+                in_database = Gene.objects.filter(entrezid__icontains=entrez).distinct()
+
+                #TODO: fix this workaround to properly get the geneset type
+                #Todo: rename this variable
+                matching_genesets = Geneset.objects.all()[0]
                 if not in_database:
                     missing.add(entrez)
-    return missing, valid
+    return missing, valid, matching_genesets
 
 
-
-#
-# class SearchView(ListView):
-#     model = Gene
-#     template_name = 'a1/search.html'
-#     context_object_name = 'all_search_results'
-#
-#     def get_queryset(self):
-#         result = super(SearchView, self).get_queryset()
-#         query = self.request.GET.get('search')
-#         if query:
-#             postresult = Gene.objects.filter(title__contains=query)
-#             result = postresult
-#         else:
-#             result = None
-#         return result
-
-
-# def searchposts(request):
-#     if request.method == 'GET':
-#         query= request.GET.get('search')
-#         print("views search reached")
-#
-#         submitbutton= request.GET.get('submit')
-#
-#         if query is not None:
-#             lookups= Gene(title__icontains=query) | Gene(content__icontains=query)
-#
-#             results= Gene.objects.filter(lookups).distinct()
-#
-#             context={'results': results,
-#                      'submitbutton': submitbutton}
-#             print("views 1st http response reached")
-#             return HttpResponse(render(request, 'a1/search.html', context))
-#
-#
-#         else:
-#             return HttpResponse(render(request, 'a1/search.html'))
-#
-#     else:
-#         return HttpResponse(render(request, 'a1/search.html'))
 class HomePageView(TemplateView):
     template_name = 'a1/base.html'
 
