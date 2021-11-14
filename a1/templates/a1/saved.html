@@ -54,6 +54,12 @@
 <strong>Your document is not saved yet.</strong>
 {% endif %}
 
+{% if pval %}
+<strong>HERE ARE THE P VALUES:
+    {{pval}}
+</strong>
+{% endif %}
+
 {% if missing_genes %}
 <strong>Your file contains the following unsupported entrezIDs:
     {{missing_genes}}

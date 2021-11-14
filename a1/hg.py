@@ -1,7 +1,7 @@
 import statsmodels
 from statsmodels.stats.multitest import multipletests
 from scipy.stats import hypergeom
-from GMT import GMT
+from a1 import GMT
 import csv
 import json
 import math
@@ -94,6 +94,7 @@ def gene_group(gene_list, ref_filename, user_filename, mht_flag):
     #{"D34555": [(),(),()], }
     raw_pval_dict = dict()
     for gene_str in gene_list:
+        #todo
         user_set_str = user_GMT.get_genes_str(gene_str)
         # print(user_set_str)
         ref_set_str = ref_parser.keys()
