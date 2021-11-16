@@ -209,6 +209,12 @@ def gene_group(gene_list, user_set, mht_flag):
         # {"D34555": [(),(),()], }
 
     raw_pval_dict = dict()
+
+    """
+    1. make sure this is what gene_str in gene)list for looop is doing
+    
+    2. replace gene_list iwth user set and obtain user set names 
+    """
     for gene_str in gene_list:
         p_corrected = hg_loop(ref_sets_entrez, user_set, mht_flag)
         p_to_name = zip(p_corrected, ref_sets_names)
@@ -237,7 +243,8 @@ def gene_group(gene_list, user_set, mht_flag):
                 sig_terms[tup[1]] = tup[0]
     print(sig_terms)
 
-    # check if term is significant, and then label them, and aggregate to array todo: this is actually useless because of the
+    # check if term is significant, and then label them, and aggregate to array
+    # todo: this is actually useless because of the
     # todo: sig checker above^!
     clean = dict()
     for key, val in raw_pval_dict.items():
