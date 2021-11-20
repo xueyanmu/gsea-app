@@ -154,10 +154,10 @@ def gene_group(gene_list, ref_filename, user_filename, mht_flag):
         json.dump(allDict, outfile)
 
 #test func
-gene_list0 = ["DRB003918","DRB003917", "DRB003901", "DRB003919",
+input_genelist = ["DRB003918","DRB003917", "DRB003901", "DRB003919",
               "DRB003929", "DRB003941", "DRB004025", "DRB004035",
               "DRB004025", "DRB004017"]
-result = gene_group(gene_list0, ref_filename, user_filename, True)
+result = gene_group(input_genelist, ref_filename, user_filename, True)
 print(result)
 
 

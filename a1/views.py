@@ -10,6 +10,14 @@ from django.views.generic import ListView, TemplateView
 from django.db.models import Q
 from .forms import DocumentForm
 from .models import Document, Gene, Geneset, Organism, CrossRefDB, CrossRef, Geneset_membership
+import statsmodels
+from statsmodels.stats.multitest import multipletests
+from scipy.stats import hypergeom
+from a1 import GMT
+import csv
+import json
+import math
+from a1.models import Geneset
 
 
 def base(request):
@@ -52,14 +60,14 @@ def upload_file(request):
         valid_genes.append(check_input(uploaded_file_path)[1])
         valid_genes = valid_genes[0]
 
-        #calculate the P value
-        #todo: do we still use random selected gene list like below?
-        gene_list0 = ["DRB003918", "DRB003917", "DRB003901", "DRB003919",
-                      "DRB003929", "DRB003941", "DRB004025", "DRB004035",
-                      "DRB004025", "DRB004017"]
-        pval = get_p(gene_list0, valid_genes)
-
-
+        # calculate the P value
+        # todo: do we still use random selected gene list like below?
+        input_genelist = ["DRB003918", "DRB003917", "DRB003901", "DRB003919",
+                          "DRB003929", "DRB003941", "DRB004025", "DRB004035",
+                          "DRB004025", "DRB004017"]
+        pval = get_p(input_genelist, valid_genes)
+        print("PVAL HERE")
+        print(pval)
         geneset = check_input(uploaded_file_path)[2]
     return render(request, 'a1/saved.html', locals())
 
@@ -92,24 +100,18 @@ def check_input(filename):
         user_set = {}
     return missing, valid, geneset_type
 
+
 def get_p(gene_list, user_set):
     result = gene_group(gene_list, user_set, True)
+    print("RESULT")
     print(result)
     return result
+
 
 """
 =======================================
 
 """
-import statsmodels
-from statsmodels.stats.multitest import multipletests
-from scipy.stats import hypergeom
-from a1 import GMT
-import csv
-import json
-import math
-
-from a1.models import Geneset
 
 
 def hg(ref_set, user_set, ref_genesets):
@@ -134,7 +136,6 @@ def hg(ref_set, user_set, ref_genesets):
     return -(math.log(pval))
 
 
-
 def hg_loop(ref_sets, user_set, mht_flag):
     """
     This function finds the P-value of a given user set over each set in a reference file
@@ -153,6 +154,11 @@ def hg_loop(ref_sets, user_set, mht_flag):
         ref_set = set(ref_set)
         user_set = set(user_set)
         pval = hg(ref_set, user_set, ref_sets)
+
+        if pval > 0:
+            print("pval in hg loop")
+            print(pval)
+
         p_list.append(pval)
 
     if mht_flag == True:
@@ -180,10 +186,19 @@ for ref in Geneset.objects.all():
 """
 
 
-def gene_group(gene_list, user_set, mht_flag):
+def gene_group(gene_list, pre_user_set, mht_flag):
+    # process user set into set of entrezID nums
+    user_set = []
+    for genes in pre_user_set:
+        id = genes.entrezid
+        user_set.append(id)
+
+    print("user set")
+    print(user_set)
+
     # ref_sets is a dict of
     ref_sets_entrez = []
-    ref_sets_names =[]
+    ref_sets_names = []
     for ref in Geneset.objects.all():
         # get the genes in entrez form for each geneset-
 
@@ -191,11 +206,10 @@ def gene_group(gene_list, user_set, mht_flag):
         committee_relations = CommitteeRole.objects.filter(user=request.user).values_list('committee__pk', flat=True)
         item_list = Item.objects.filter(committees__in=committee_relations)
         """
-        setname= ref.id
+        setname = ref.id
         geneset_relations = Geneset_membership.objects.filter(geneset=setname).values_list('geneset__pk', flat=True)
         # print("geneset_relations")
         # print(geneset_relations)
-
 
         ref_genes_list = Gene.objects.filter(geneset_name__in=geneset_relations).values_list('entrezid', flat=True)
         # print("ref_genes_list")
@@ -204,6 +218,8 @@ def gene_group(gene_list, user_set, mht_flag):
 
         ref_sets_entrez.append(ref_genes_list)
         ref_sets_names.append(setname)
+        # print("ref set entrez")
+        # print(ref_sets_entrez)
 
         # get pval of all genes and their terms [geneName: pval, goTerm]
         # {"D34555": [(),(),()], }
@@ -215,32 +231,47 @@ def gene_group(gene_list, user_set, mht_flag):
     
     2. replace gene_list iwth user set and obtain user set names 
     """
-    for gene_str in gene_list:
-        p_corrected = hg_loop(ref_sets_entrez, user_set, mht_flag)
-        p_to_name = zip(p_corrected, ref_sets_names)
-        # due to log change in first func
-        p_to_name = sorted(p_to_name, reverse=True)
-        # (-0.0, 'GO:0000432'),(-0.0, 'GO:0001432'),
 
-        # find all sig terms-- this code leaves pvals of 1 to be blank for other gene sets without the sig pval!
-        # print(p_to_name)
-        p_to_name_clean = []
-        for tup in p_to_name:
-            if tup[0] > 0:
-                p_to_name_clean.append(tup)
 
-        key = gene_str
-        val = p_to_name_clean
-        raw_pval_dict[key] = val
-        # print(raw_pval_dict)
-        #print(p_to_name_clean)
-        # find all significant terms
+    p_corrected = hg_loop(ref_sets_entrez, user_set, mht_flag)
+
+    print('P CORRECTED')
+    print(p_corrected)
+    print('ref set names')
+    print(ref_sets_names)
+
+
+    p_to_name = zip(p_corrected, ref_sets_names)
+    # due to log change in first func
+    p_to_name = sorted(p_to_name, reverse=True)
+    # (-0.0, 'GO:0000432'),(-0.0, 'GO:0001432'),
+
+    # find all sig terms-- this code leaves pvals of 1 to be blank for other gene sets without the sig pval!
+    # print(p_to_name)
+    p_to_name_clean = []
+    for tup in p_to_name:
+        if tup[0] > 0:
+            p_to_name_clean.append(tup)
+
+    print("p to name clean")
+    print(p_to_name_clean)
+
+    key = gene_list[0]
+    val = p_to_name_clean
+    raw_pval_dict[key] = val
+    # print(raw_pval_dict)
+
+
+    # print(p_to_name_clean)
+    # find all significant terms
     sig_terms = dict()
     for key, lst in raw_pval_dict.items():
         for tup in lst:
             # if tup[0] != 1.0:
             if tup[0] > 0:
                 sig_terms[tup[1]] = tup[0]
+
+    print("sig terms!")
     print(sig_terms)
 
     # check if term is significant, and then label them, and aggregate to array
@@ -263,7 +294,7 @@ def gene_group(gene_list, user_set, mht_flag):
     allDict = []
     for key, val in clean.items():
         singleDict = {}
-        singleDict['gene name'] = key
+        singleDict['geneset name'] = key
         singleDict['values'] = val
         if singleDict:
             allDict.append(singleDict)
@@ -273,7 +304,8 @@ def gene_group(gene_list, user_set, mht_flag):
     return allDict
 
 # test func
-gene_list0 = ["DRB003918", "DRB003917", "DRB003901", "DRB003919",
-              "DRB003929", "DRB003941", "DRB004025", "DRB004035",
-              "DRB004025", "DRB004017"]
+input_genelist = ["DRB003918", "DRB003917", "DRB003901", "DRB003919",
+                  "DRB003929", "DRB003941", "DRB004025", "DRB004035",
+                  "DRB004025", "DRB004017"]
 
+input_genelist = ["DRB003918"]
