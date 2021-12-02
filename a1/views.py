@@ -66,8 +66,8 @@ def upload_file(request):
                           "DRB003929", "DRB003941", "DRB004025", "DRB004035",
                           "DRB004025", "DRB004017"]
         pval = get_p(input_genelist, valid_genes)
-        print("PVAL HERE")
-        print(pval)
+        # print("PVAL HERE")
+        # print(pval)
         geneset = check_input(uploaded_file_path)[2]
     return render(request, 'a1/saved.html', locals())
 
@@ -126,11 +126,13 @@ def hg(ref_set, user_set, ref_genesets):
     m = len(ref_set)
     k = len(user_set)
     x = len(user_set.intersection(ref_set))
+    print('intersection'+str(x))
     M = 0
     #
     for val_set in ref_genesets:
         M += len(val_set)
     pval = hypergeom.sf(x - 1, M, k, m)
+
 
     # use negative log here to indicate logarithmic significance
     return -(math.log(pval))
@@ -207,13 +209,18 @@ def gene_group(gene_list, pre_user_set, mht_flag):
         item_list = Item.objects.filter(committees__in=committee_relations)
         """
         setname = ref.id
+
+        #get all memberships for 1 geneset
         geneset_relations = Geneset_membership.objects.filter(geneset=setname).values_list('geneset__pk', flat=True)
         # print("geneset_relations")
         # print(geneset_relations)
 
-        ref_genes_list = Gene.objects.filter(geneset_name__in=geneset_relations).values_list('entrezid', flat=True)
-        # print("ref_genes_list")
-        # print(ref_genes_list)
+        #get all genes for
+        ref_genes_list = Geneset_membership.objects.filter(geneset__in=geneset_relations.values_list('geneset__pk', flat=True)).values_list('gene__pk', flat=True)
+
+        #ref_genes_list = Gene.objects.filter(geneset_name__in=geneset_relations).values_list('entrezid', flat=True)
+        print("ref_genes_list")
+        print(ref_genes_list)
         #
 
         ref_sets_entrez.append(ref_genes_list)
@@ -284,7 +291,7 @@ def gene_group(gene_list, pre_user_set, mht_flag):
             newvalDict = {}
             if tup[1] in sig_terms.keys():
                 newvalDict['pval'] = tup[0]
-                newvalDict['GOterm'] = tup[1]
+                newvalDict['geneset name'] = tup[1]
             # dont add empty dicts
             if newvalDict.items():
                 newval.append(newvalDict)

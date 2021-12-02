@@ -35,6 +35,7 @@ class Command(BaseCommand):
         fn = options.get('input_file', None)
 
         with open(fn, "r") as f:
+            missing_g = []
             gsid = None
             name = None
             genes = None
@@ -52,7 +53,6 @@ class Command(BaseCommand):
                 # create many2many relationships btwn gene, gs, and org
                 # todo: i made all the organism attrs the same lmao
                 for g in genes:
-
                     try:
                         o = Organism.objects.filter(taxonomy_id=9606)[0]
                     except ObjectDoesNotExist:
@@ -60,45 +60,34 @@ class Command(BaseCommand):
 
                     try:
                         gs = Geneset.objects.get(id=gsid)
-
                     except ObjectDoesNotExist:
                         name = name.split("(")[0]
-
                         gs = Geneset(id=gsid,
                                      grouping="GO Biological Process")
                         gs.setname = str(name)
                         gs.save()
 
                     # get all the genes
-                    #todo: clear out database, upload gene with gene loader command
                     try:
-                        #update the existing gene's geneset name, in case it doesnt match
-                        Gene.objects.filter(entrezid=g).update(geneset_name=gsid)
+                        ##update the existing gene's geneset name, in case it doesnt match
+                        #Gene.objects.filter(entrezid=g).update(geneset_name=gsid)
                         gene = Gene.objects.filter(entrezid=g).first()
 
                         #cover that weird case with gene 84953 not existing...
                         if gene is None:
                             gene = Gene.objects.create(entrezid=g, standard_name=name, organism=o)
 
+                        try:
+                            #make the multi-to-multi memberships
+                            gs_membership = Geneset_membership(gene=gene, geneset=gs)
+                            gs_membership.save()
+                            org_membership = OrganismGS(organism=o, geneset=gs)
+                            org_membership.save()
 
-                    except ObjectDoesNotExist:  # gene doesnt exist yet
-                        gene = Gene.objects.create(entrezid=g, standard_name=name, organism=o)
+                        except ObjectDoesNotExist:
+                            pass
 
-                    try:
-                        # todo: need try/except here too?
-                        #todo: make sure this part is working too
-                        gs_membership = Geneset_membership(gene=gene, geneset=gs)
-                        #
-                        # print("GENEset ")
-                        # print(gs_membership)
-                        # print(gene)
-                        # print(gs)
-                        # print(gene.id)
-                        gs_membership.save()
-
-                        org_membership = OrganismGS(organism=o, geneset=gs)
-                        org_membership.save()
-
-
+                    # gene doesnt exist so we add it to missing genes list
                     except ObjectDoesNotExist:
-                        pass
+                        missing_g.append(g)
+
